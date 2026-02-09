@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatBot - Badababu</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background-color: #111827;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #374151;
+            padding: 16px;
+        }
+
+        .new-chat-btn {
+            background-color: #374151;
+            color: white;
+            border: 1px solid #4b5563;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 16px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .new-chat-btn:hover {
+            background-color: #4b5563;
+        }
+
+        .chat-history {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 16px;
+        }
+
+        .chat-history-item {
+            padding: 12px;
+            color: #e5e7eb;
+            cursor: pointer;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chat-history-item:hover {
+            background-color: #374151;
+        }
+
+        .sidebar-footer {
+            border-top: 1px solid #374151;
+            padding-top: 16px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            cursor: pointer;
+            color: #e5e7eb;
+            padding: 12px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-footer:hover {
+            background-color: #374151;
+        }
+
+        /* Main Chat Area */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #0f172a;
+        }
+
+        .chat-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid #374151;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            color: #e5e7eb;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes bounce {
+            0%, 80%, 100% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .message.bot .message-avatar {
+            background-color: #10b981;
+            color: white;
+        }
+
+        .message.user .message-avatar {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            word-wrap: break-word;
+            line-height: 1.5;
+        }
+
+        .message.bot .message-content {
+            background-color: #1f2937;
+            color: #e5e7eb;
+        }
+
+        .message.user .message-content {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 20px 24px;
+            border-top: 1px solid #374151;
+            background-color: #0f172a;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .input-field {
+            flex: 1;
+            background-color: #1f2937;
+            border: 1px solid #374151;
+            color: #e5e7eb;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: none;
+            max-height: 100px;
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background-color: #111827;
+        }
+
+        .input-field::placeholder {
+            color: #9ca3af;
+        }
+
+        .send-btn {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 40px;
+            width: 40px;
+            flex-shrink: 0;
+        }
+
+        .send-btn:hover {
+            background-color: #2563eb;
+        }
+
+        .send-btn:disabled {
+            background-color: #6b7280;
+            cursor: not-allowed;
+        }
+
+        /* Settings Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: #1f2937;
+            padding: 24px;
+            border-radius: 12px;
+            width: 80%;
+            max-width: 500px;
+            border: 1px solid #374151;
+        }
+
+        .modal-header {
+            color: #e5e7eb;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #9ca3af;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            color: #e5e7eb;
+        }
+
+        .modal-body {
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #e5e7eb;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .form-group input {
+            width: 100%;
+            background-color: #111827;
+            border: 1px solid #374151;
+            color: #e5e7eb;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .form-group input::placeholder {
+            color: #6b7280;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .modal-btn-primary {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .modal-btn-primary:hover {
+            background-color: #2563eb;
+        }
+
+        .modal-btn-secondary {
+            background-color: #374151;
+            color: #e5e7eb;
+        }
+
+        .modal-btn-secondary:hover {
+            background-color: #4b5563;
+        }
+
+        .help-text {
+            color: #9ca3af;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        /* Scrollbar Styling */
+        .chat-messages::-webkit-scrollbar,
+        .chat-history::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track,
+        .chat-history::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb,
+        .chat-history::-webkit-scrollbar-thumb {
+            background: #374151;
+            border-radius: 3px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover,
+        .chat-history::-webkit-scrollbar-thumb:hover {
+            background: #4b5563;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #9ca3af;
+            gap: 16px;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            opacity: 0.5;
+        }
+
+        .empty-state-text {
+            font-size: 16px;
+            text-align: center;
+        }
+
+        /* ===== RESPONSIVE DESIGN ===== */
+        
+        /* Tablet (768px and below) */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+                padding: 12px;
+            }
+
+            .chat-messages {
+                padding: 16px;
+                gap: 12px;
+            }
+
+            .message-content {
+                max-width: 85%;
+                padding: 10px 14px;
+                font-size: 14px;
+            }
+
+            .input-area {
+                padding: 16px;
+            }
+
+            .modal-content {
+                width: 90%;
+                max-width: 450px;
+                padding: 20px;
+            }
+
+            .new-chat-btn {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+
+            .chat-header {
+                padding: 12px 16px;
+            }
+
+            .header-title {
+                font-size: 14px;
+            }
+        }
+
+        /* Mobile (480px and below) */
+        @media (max-width: 480px) {
+            * {
+                font-size: 14px;
+            }
+
+            body {
+                overflow: hidden;
+            }
+
+            .container {
+                flex-wrap: wrap;
+            }
+
+            .sidebar {
+                display: none;
+                position: fixed;
+                left: 0;
+                top: 0;
+                width: 70%;
+                height: 100%;
+                z-index: 999;
+                flex-direction: column;
+                box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
+                animation: slideInLeft 0.3s ease;
+            }
+
+            .sidebar.open {
+                display: flex;
+            }
+
+            @keyframes slideInLeft {
+                from {
+                    transform: translateX(-100%);
+                }
+                to {
+                    transform: translateX(0);
+                }
+            }
+
+            .chat-container {
+                width: 100%;
+                height: 100%;
+            }
+
+            .chat-header {
+                padding: 12px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .header-title {
+                font-size: 13px;
+                font-weight: 600;
+            }
+
+            .menu-btn {
+                background: none;
+                border: none;
+                color: #e5e7eb;
+                font-size: 18px;
+                cursor: pointer;
+                padding: 0;
+                display: flex;
+                align-items: center;
+            }
+
+            .chat-messages {
+                padding: 12px;
+                gap: 8px;
+                font-size: 13px;
+            }
+
+            .message {
+                gap: 8px;
+            }
+
+            .message-avatar {
+                width: 28px;
+                height: 28px;
+                font-size: 12px;
+            }
+
+            .message-content {
+                max-width: 80%;
+                padding: 8px 12px;
+                font-size: 13px;
+                border-radius: 10px;
+            }
+
+            .input-area {
+                padding: 12px;
+                border-top: 1px solid #374151;
+            }
+
+            .input-wrapper {
+                gap: 8px;
+            }
+
+            .input-field {
+                padding: 10px 12px;
+                font-size: 13px;
+                max-height: 80px;
+                flex: 1;
+            }
+
+            .send-btn {
+                width: 36px;
+                height: 36px;
+                padding: 0;
+                font-size: 16px;
+            }
+
+            .modal-content {
+                width: 95%;
+                max-width: 100%;
+                padding: 16px;
+                border-radius: 16px;
+                margin: 16px;
+            }
+
+            .modal-header {
+                font-size: 16px;
+                margin-bottom: 12px;
+                gap: 8px;
+            }
+
+            .modal-body {
+                margin-bottom: 12px;
+            }
+
+            .form-group {
+                margin-bottom: 12px;
+            }
+
+            .form-group label {
+                font-size: 13px;
+                margin-bottom: 6px;
+            }
+
+            .form-group input {
+                padding: 8px 10px;
+                font-size: 13px;
+            }
+
+            .modal-btn {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+
+            .empty-state-icon {
+                font-size: 36px;
+            }
+
+            .empty-state-text {
+                font-size: 14px;
+            }
+        }
+
+        /* Small Mobile (320px and below) */
+        @media (max-width: 320px) {
+            .message-avatar {
+                width: 24px;
+                height: 24px;
+                font-size: 10px;
+            }
+
+            .message-content {
+                max-width: 75%;
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+
+            .header-title {
+                font-size: 12px;
+            }
+
+            .input-field::placeholder {
+                font-size: 12px;
+            }
+
+            .send-btn {
+                width: 32px;
+                height: 32px;
+            }
+        }
+
+        /* Large Screens (1200px and above) */
+        @media (min-width: 1200px) {
+            .sidebar {
+                width: 300px;
+            }
+
+            .message-content {
+                max-width: 60%;
+            }
+
+            .modal-content {
+                max-width: 550px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <button class="new-chat-btn">
+                <span>+ New Chat</span>
+            </button>
+            <div class="chat-history">
+                <div class="chat-history-item">What is AI?</div>
+                <div class="chat-history-item">Explain Machine Learning</div>
+                <div class="chat-history-item">Python tutorial</div>
+                <div class="chat-history-item">Web development tips</div>
+            </div>
+            <div class="sidebar-footer">
+                <span>⚙️</span>
+                <span>Settings</span>
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="chat-container">
+            <!-- Header -->
+            <div class="chat-header">
+                <button class="menu-btn" id="menuBtn" onclick="toggleSidebar()" style="display: none;">☰</button>
+                <div class="header-title">Assistant Badababu</div>
+            </div>
+
+            <!-- Messages Area -->
+            <div class="chat-messages" id="chatMessages">
+                <div class="empty-state">
+                    <div class="empty-state-icon">💬</div>
+                    <div class="empty-state-text">
+                        <strong>Start a conversation</strong><br>
+                        Ask me anything!
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-area">
+                <div class="input-wrapper">
+                    <textarea 
+                        class="input-field" 
+                        id="messageInput" 
+                        placeholder="Ask me anything..." 
+                        rows="1"
+                        maxlength="4000"
+                    ></textarea>
+                    <button class="send-btn" id="sendBtn">➤</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>Settings</span>
+                <button class="close-btn" onclick="closeSettings()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="apiKeyInput">Groq API Key (Free!)</label>
+                    <input 
+                        type="password" 
+                        id="apiKeyInput" 
+                        placeholder="gsk_..." 
+                        value=""
+                    />
+                    <div class="help-text">
+                        ✨ Get your FREE API key at <a href="https://console.groq.com/keys" target="_blank" style="color: #3b82f6;">Groq Console</a><br>
+                        Takes 30 seconds! No credit card needed.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-secondary" onclick="closeSettings()">Cancel</button>
+                <button class="modal-btn modal-btn-primary" onclick="saveSettings()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const chatMessages = document.getElementById('chatMessages');
+
+        // Auto-resize textarea
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+
+        // Send message on Enter key
+        messageInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Send button click
+        sendBtn.addEventListener('click', sendMessage);
+
+        // Responsive functions
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.classList.toggle('open');
+        }
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(e) {
+            const sidebar = document.querySelector('.sidebar');
+            const menuBtn = document.getElementById('menuBtn');
+            if (window.innerWidth <= 480 && window.getComputedStyle(menuBtn).display !== 'none') {
+                if (!sidebar.contains(e.target) && !menuBtn.contains(e.target)) {
+                    sidebar.classList.remove('open');
+                }
+            }
+        });
+
+        // Handle window resize to show/hide menu button
+        window.addEventListener('resize', function() {
+            const menuBtn = document.getElementById('menuBtn');
+            const sidebar = document.querySelector('.sidebar');
+            if (window.innerWidth > 480) {
+                menuBtn.style.display = 'none';
+                sidebar.classList.remove('open');
+            } else {
+                menuBtn.style.display = 'flex';
+            }
+        });
+
+        // Initialize menu button visibility
+        window.addEventListener('load', function() {
+            const menuBtn = document.getElementById('menuBtn');
+            if (window.innerWidth <= 480) {
+                menuBtn.style.display = 'flex';
+            }
+        });
+
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            const apiKey = localStorage.getItem('groq_api_key');
+            if (!apiKey) {
+                alert('Please set your Groq API key first. Click Settings button!');
+                return;
+            }
+
+            // Clear empty state
+            if (chatMessages.querySelector('.empty-state')) {
+                chatMessages.innerHTML = '';
+            }
+
+            // Add user message
+            const userMessageDiv = document.createElement('div');
+            userMessageDiv.className = 'message user';
+            userMessageDiv.innerHTML = `
+                <div class="message-content">${escapeHtml(message)}</div>
+                <div class="message-avatar">You</div>
+            `;
+            chatMessages.appendChild(userMessageDiv);
+
+            // Clear input
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+
+            // Scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Show loading indicator
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'message bot';
+            loadingDiv.id = 'loading-message';
+            loadingDiv.innerHTML = `
+                <div class="message-avatar">AI</div>
+                <div class="message-content">
+                    <div style="display: flex; gap: 4px; align-items: center;">
+                        <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; animation: bounce 1.4s infinite;"></span>
+                        <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; animation: bounce 1.4s infinite 0.2s;"></span>
+                        <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; animation: bounce 1.4s infinite 0.4s;"></span>
+                    </div>
+                </div>
+            `;
+            chatMessages.appendChild(loadingDiv);
+
+            try {
+                const apiUrl = window.location.protocol === 'file:' ? 'http://localhost:3000/api/chat' : '/api/chat';
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        apiKey: apiKey
+                    })
+                });
+
+                const data = await response.json();
+
+                // Remove loading message
+                const loadingMsg = document.getElementById('loading-message');
+                if (loadingMsg) loadingMsg.remove();
+
+                if (response.ok && data.response) {
+                    const botMessageDiv = document.createElement('div');
+                    botMessageDiv.className = 'message bot';
+                    botMessageDiv.innerHTML = `
+                        <div class="message-avatar">AI</div>
+                        <div class="message-content">${escapeHtml(data.response)}</div>
+                    `;
+                    chatMessages.appendChild(botMessageDiv);
+                } else if (data.error) {
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'message bot';
+                    errorDiv.innerHTML = `
+                        <div class="message-avatar">AI</div>
+                        <div class="message-content" style="color: #ef4444;">Error: ${escapeHtml(data.error)}</div>
+                    `;
+                    chatMessages.appendChild(errorDiv);
+                } else {
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'message bot';
+                    errorDiv.innerHTML = `
+                        <div class="message-avatar">AI</div>
+                        <div class="message-content" style="color: #ef4444;">Error: Unexpected response</div>
+                    `;
+                    chatMessages.appendChild(errorDiv);
+                }
+
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            } catch (error) {
+                const loadingMsg = document.getElementById('loading-message');
+                if (loadingMsg) loadingMsg.remove();
+
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'message bot';
+                errorDiv.innerHTML = `
+                    <div class="message-avatar">AI</div>
+                    <div class="message-content" style="color: #ef4444;">❌ Error: ${escapeHtml(error.message)}</div>
+                `;
+                chatMessages.appendChild(errorDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // New Chat button
+        document.querySelector('.new-chat-btn').addEventListener('click', () => {
+            chatMessages.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">💬</div>
+                    <div class="empty-state-text">
+                        <strong>Start a conversation</strong><br>
+                        Ask me anything!
+                    </div>
+                </div>
+            `;
+        });
+
+        // Settings button
+        document.querySelector('.sidebar-footer').addEventListener('click', openSettings);
+
+        function openSettings() {
+            const apiKey = localStorage.getItem('groq_api_key') || '';
+            document.getElementById('apiKeyInput').value = apiKey;
+            document.getElementById('settingsModal').classList.add('show');
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.remove('show');
+        }
+
+        function saveSettings() {
+            const apiKey = document.getElementById('apiKeyInput').value.trim();
+            if (!apiKey) {
+                alert('Please enter your Groq API key');
+                return;
+            }
+            localStorage.setItem('groq_api_key', apiKey);
+            alert('✅ API key saved! You can now chat.');
+            closeSettings();
+        }
+
+        // Close modal when clicking outside
+        window.addEventListener('click', (e) => {
+            const modal = document.getElementById('settingsModal');
+            if (e.target === modal) {
+                closeSettings();
+            }
+        });
+
+        // Global error handlers to capture and display unexpected runtime errors
+        window.addEventListener('error', function(event) {
+            console.error('Global error captured:', event.message, event.error);
+            try {
+                const errDiv = document.createElement('div');
+                errDiv.className = 'message bot';
+                errDiv.innerHTML = `
+                    <div class="message-avatar">AI</div>
+                    <div class="message-content" style="color: #ef4444;">Global error: ${escapeHtml(String(event.message))}</div>
+                `;
+                chatMessages.appendChild(errDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            } catch (e) {
+                console.error('Error while rendering global error:', e);
+            }
+        });
+
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('Unhandled rejection:', event.reason);
+            try {
+                const errDiv = document.createElement('div');
+                errDiv.className = 'message bot';
+                errDiv.innerHTML = `
+                    <div class="message-avatar">AI</div>
+                    <div class="message-content" style="color: #ef4444;">Unhandled promise rejection: ${escapeHtml(String(event.reason))}</div>
+                `;
+                chatMessages.appendChild(errDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            } catch (e) {
+                console.error('Error while rendering unhandled rejection:', e);
+            }
+        });
+    </script>
+</body>
+</html>
